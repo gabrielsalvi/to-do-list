@@ -39,12 +39,10 @@ typedef struct
 int menu()
 {
     int op = 0;
-    while (op != EXIT)
-    {
-        printf("%d Finaliza",EXIT);
-        printf("\n: ");
-        scanf("%d",&op);
-    }
+
+    printf("%d Finaliza\n", EXIT);
+    printf("\n: ");
+    scanf("%d",&op);
 
     return op;
 }
@@ -61,7 +59,7 @@ Task *createTask()
 
     printf("\nDigite os dados da nova tarefa:\n");
 
-    printf("Nome: ");
+    printf("\nNome: ");
     scanf("%s", task->nome);
 
     printf("Prioridade: ");
@@ -106,12 +104,21 @@ void delTask()
     return;
 }
 
+void printTask(Task *task) 
+{
+    printf("\n-> Nome: %s\n-> Prioridade: %d\n-> Entrega: %d/%d\n", 
+            task->nome, task->prioridade, task->entrega.day, task->entrega.month);
+}
+
 // Lista o conteudo da lista de tarefas (todos os campos)
-void listTasks()
+void listTasks(ToDoList *toDoList)
 {
     printf("\nLista de Tarefas\n----------------\n\n");
 
-    return;
+    for (Task *task = toDoList->head; task != NULL; task = task->next)
+    {
+        printTask(task);
+    } 
 }
 
 // Permite consultar uma tarefa da lista pelo nome
@@ -137,13 +144,19 @@ int main()
     while (op!=EXIT)
     {
         op = menu();
+
         switch(op)
         {
-            case 1 : insTask(&toDoList);
-            case 2 : delTask();
-            case 3 : upTask();
-            case 4 : queryTask();
-            case 5 : listTasks();
+            case 1 : 
+                insTask(&toDoList);
+                break;
+
+            // case 2 : delTask();
+            // case 3 : upTask();
+            // case 4 : queryTask();
+            case 5 : 
+                listTasks(&toDoList);
+                break;
         }
     }
 }
