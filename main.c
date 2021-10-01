@@ -37,7 +37,6 @@ typedef struct
     Task *tail;
 } ToDoList;
 
-// Apresenta o menu da aplicação e retorna a opção selecionada
 int menu()
 {
     int op = 0;
@@ -64,10 +63,17 @@ Task *createTask()
     printf("\nNome: ");
     scanf("%s", task->nome);
 
-    printf("Prioridade: ");
+    printf("Prioridade (1- baixa; 2- média; 3- alta): ");
     scanf("%d", &task->prioridade);
 
-    printf("Entrega (dd/MM): ");
+    while (task->prioridade < 1 || task->prioridade > 3) {
+        printf("\nDigite um valor válido para a prioridade: 1 (baixa), 2 (média) ou 3 (alta)\n");
+
+        printf("\nPrioridade (1- baixa; 2- média; 3- alta): ");
+        scanf("%d", &task->prioridade);
+    }
+
+    printf("Entrega [dd/MM]: ");
     scanf("%d/%d", &task->entrega.day, &task->entrega.month);
 
     task->prev = NULL;
@@ -76,8 +82,19 @@ Task *createTask()
     return task;
 }
 
-// Permite o cadastro de uma tarefa
-void insTask(ToDoList *tasksList)
+Task *getTaskByName(ToDoList *toDoList, char *name) 
+{
+    for (Task *task = toDoList->head; task != NULL; task = task->next) 
+    {
+        if (strcmp(task->nome, name) == 0) {
+            return task;
+        }
+    }
+
+    return NULL;
+}
+
+void insTask(ToDoList *toDoList)
 {
     Task *task = createTask();
 
@@ -85,26 +102,54 @@ void insTask(ToDoList *tasksList)
         return;
     }
 
-    // se não houver nenhuma tarefa registrada ainda
-    if (tasksList->head == NULL) 
+    if (toDoList->head == NULL) 
     {
-        tasksList->head = task;
-        tasksList->tail = task;
+        toDoList->head = task;
+        toDoList->tail = task;
     }
     else 
     {
-        tasksList->tail->next = task;
-        task->prev = tasksList->tail;
-        tasksList->tail = task;
+        toDoList->tail->next = task;
+        task->prev = toDoList->tail;
+        toDoList->tail = task;
     }
 
-    printf("\nTarefa adicionada!\n");
+    printf("\nTarefa adicionada com sucesso!\n");
 }
 
-// Permite excluir uma tarefa
-void delTask()
+void delTask(ToDoList *toDoList, char *name)
 {
-    return;
+    Task *task = getTaskByName(toDoList, name);
+
+    if (task) 
+    {
+        if (toDoList->head == toDoList->tail)
+        {
+            initToDoList(toDoList);
+        }
+        else if (task == toDoList->head)
+        {
+            toDoList->head = toDoList->head->next;
+            toDoList->head->prev = NULL;
+        }
+        else if (task == toDoList->tail)
+        {
+            toDoList->tail = toDoList->tail->prev;
+            toDoList->tail->next = NULL;
+        }
+        else
+        {
+            task->prev->next = task->next;
+            task->next->prev = task->prev;
+        }
+
+        free(task);
+        printf("\nA tarefa '%s' foi excluída com sucesso!\n", name);
+    } 
+    else 
+    {
+        printf("\nA tarefa '%s' não foi encontrada!\n", name);
+    }
 }
 
 void printTask(Task *task) 
@@ -113,43 +158,32 @@ void printTask(Task *task)
             task->nome, task->prioridade, task->entrega.day, task->entrega.month);
 }
 
-// Lista o conteudo da lista de tarefas (todos os campos)
-void listTasks(ToDoList *toDoList)
+void listTasks(ToDoList toDoList)
 {
     printf("\nLista de Tarefas\n----------------\n");
 
-    for (Task *task = toDoList->head; task != NULL; task = task->next)
+    for (Task *task = toDoList.head; task != NULL; task = task->next)
     {
         printTask(task);
     } 
 }
 
-// Permite consultar uma tarefa da lista pelo nome
-void queryTask(Task *task, char *name)
-{
-    bool found = false;
+void queryTask(ToDoList *toDoList, char *name)
+{   
+    Task *searchedTask = getTaskByName(toDoList, name);
 
-    for (Task *aux = task; aux != NULL; aux = aux->next)
-    {
-        if (strcmp(aux->nome, name) == 0)
-        {
-            printTask(aux);
-            found = true;
-        }
-    }
-
-    if (!found) {
-        printf("\nNão há nenhuma tarefa com o nome '%s'!\n", name);
+    if (searchedTask) {
+        printTask(searchedTask);
+    } else {
+        printf("\nA tarefa '%s' não foi encontrada!\n", name);
     }
 }
 
-// Permite a atualização dos dados de uma tarefa
 void upTask()
 {
     return;
 }
 
-// Programa principal
 int main()
 {
     ToDoList toDoList;
@@ -168,18 +202,23 @@ int main()
                 insTask(&toDoList);
                 break;
 
-            // case 2 : delTask();
+            case 2 :
+                printf("\nNome da tarefa à ser deletada: ");
+                scanf("%s", name);
+
+                delTask(&toDoList, name);
+                break;
+
             // case 3 : upTask();
             case 4 :
                 printf("\nNome da Tarefa: ");
                 scanf("%s", name);
 
-                queryTask(toDoList.head, name);
-
+                queryTask(&toDoList, name);
                 break;
 
             case 5 : 
-                listTasks(&toDoList);
+                listTasks(toDoList);
                 break;
 
             default :
