@@ -11,6 +11,8 @@
 
 #include <stdio.h> 
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 #define EXIT 10
 
@@ -123,9 +125,22 @@ void listTasks(ToDoList *toDoList)
 }
 
 // Permite consultar uma tarefa da lista pelo nome
-void querytask()
+void queryTask(Task *task, char *name)
 {
-    return;
+    bool found = false;
+
+    for (Task *aux = task; aux != NULL; aux = aux->next)
+    {
+        if (strcmp(aux->nome, name) == 0)
+        {
+            printTask(aux);
+            found = true;
+        }
+    }
+
+    if (!found) {
+        printf("\nNão há nenhuma tarefa com o nome '%s'!\n", name);
+    }
 }
 
 // Permite a atualização dos dados de uma tarefa
@@ -141,8 +156,9 @@ int main()
     initToDoList(&toDoList);
 
     int op = 0;
-    
-    while (op!=EXIT)
+    char name[50];
+
+    while (op != EXIT)
     {
         op = menu();
 
@@ -154,9 +170,20 @@ int main()
 
             // case 2 : delTask();
             // case 3 : upTask();
-            // case 4 : queryTask();
+            case 4 :
+                printf("\nNome da Tarefa: ");
+                scanf("%s", name);
+
+                queryTask(toDoList.head, name);
+
+                break;
+
             case 5 : 
                 listTasks(&toDoList);
+                break;
+
+            default :
+                printf("\nOpção Inválida!\n");
                 break;
         }
     }
