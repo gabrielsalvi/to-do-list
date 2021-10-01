@@ -11,7 +11,6 @@
 
 #include <stdio.h> 
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 #define EXIT 10
@@ -73,7 +72,7 @@ Task *createTask()
         scanf("%d", &task->prioridade);
     }
 
-    printf("Entrega [dd/MM]: ");
+    printf("Entrega (dd/mm): ");
     scanf("%d/%d", &task->entrega.day, &task->entrega.month);
 
     task->prev = NULL;
@@ -179,9 +178,34 @@ void queryTask(ToDoList *toDoList, char *name)
     }
 }
 
-void upTask()
+void upTask(ToDoList *toDoList, char *name)
 {
-    return;
+    Task *task = getTaskByName(toDoList, name);
+
+    if (task)
+    {
+        printf("\nDados atuais da tarefa: \n");
+        printTask(task);
+
+        printf("\nPrioridade (1- baixa; 2- média; 3- alta): ");
+        scanf("%d", &task->prioridade);
+
+        while (task->prioridade < 1 || task->prioridade > 3) {
+            printf("\nDigite um valor válido para a prioridade: 1 (baixa), 2 (média) ou 3 (alta)\n");
+
+            printf("\nPrioridade (1- baixa; 2- média; 3- alta): ");
+            scanf("%d", &task->prioridade);
+        }
+
+        printf("Entrega (dd/mm): ");
+        scanf("%d/%d", &task->entrega.day, &task->entrega.month);
+
+        printf("\nA tarefa '%s' doi atualizada com sucesso!\n", name);
+    } 
+    else 
+    {
+        printf("\nA tarefa '%s' não foi encontrada!\n", name);
+    }
 }
 
 int main()
@@ -209,7 +233,13 @@ int main()
                 delTask(&toDoList, name);
                 break;
 
-            // case 3 : upTask();
+            case 3 :
+                printf("\nNome da tarefa à ser editada: ");
+                scanf("%s", name);
+
+                upTask(&toDoList, name);
+                break;
+            
             case 4 :
                 printf("\nNome da Tarefa: ");
                 scanf("%s", name);
@@ -219,6 +249,9 @@ int main()
 
             case 5 : 
                 listTasks(toDoList);
+                break;
+
+            case 10 :
                 break;
 
             default :
