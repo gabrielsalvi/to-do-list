@@ -40,7 +40,7 @@ int menu()
 {
     int op = 0;
 
-    printf("%d Finaliza\n", EXIT);
+    printf("\n%d Finaliza", EXIT);
     printf("\n: ");
     scanf("%d",&op);
 
@@ -91,6 +91,7 @@ void insTask(ToDoList *tasksList)
     }
     else 
     {
+        tasksList->tail->next = task;
         task->prev = tasksList->tail;
         tasksList->tail = task;
     }
@@ -106,14 +107,14 @@ void delTask()
 
 void printTask(Task *task) 
 {
-    printf("\n-> Nome: %s\n-> Prioridade: %d\n-> Entrega: %d/%d\n", 
+    printf("\n-> Nome: %s\n   Prioridade: %d\n   Entrega: %d/%d\n", 
             task->nome, task->prioridade, task->entrega.day, task->entrega.month);
 }
 
 // Lista o conteudo da lista de tarefas (todos os campos)
 void listTasks(ToDoList *toDoList)
 {
-    printf("\nLista de Tarefas\n----------------\n\n");
+    printf("\nLista de Tarefas\n----------------\n");
 
     for (Task *task = toDoList->head; task != NULL; task = task->next)
     {
