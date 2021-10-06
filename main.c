@@ -93,10 +93,8 @@ Task *getTaskByName(ToDoList *toDoList, char *name)
     return NULL;
 }
 
-void insTask(ToDoList *toDoList)
+void insTask(ToDoList *toDoList, Task *task)
 {
-    Task *task = createTask();
-
     if (task == NULL) {
         return;
     }
@@ -112,8 +110,6 @@ void insTask(ToDoList *toDoList)
         task->prev = toDoList->tail;
         toDoList->tail = task;
     }
-
-    printf("\nTarefa adicionada com sucesso!\n");
 }
 
 void delTask(ToDoList *toDoList, char *name)
@@ -208,19 +204,44 @@ void upTask(ToDoList *toDoList, char *name)
     }
 }
 
-void writeFile(FILE *file, ToDoList toDoList)
+void readFile(FILE *file, ToDoList *toDoList) 
+{   
+    Task *task;
+
+    while (!feof(file)) 
+    {
+        task = (Task *)malloc(sizeof(Task));
+
+        fscanf(file, "%s\n", task->nome);
+        fscanf(file, "%d\n", &task->prioridade);
+        fscanf(file, "%d/%d\n", &task->entrega.day, &task->entrega.month);
+
+        insTask(toDoList, task);
+    }
+}
+
+void writeFile(ToDoList toDoList)
 {
+    FILE *file = fopen("data.txt", "wt");
+
     for (Task *task = toDoList.head; task != NULL; task = task->next) 
     {
-        fprintf(file, "%s;%d;%d/%d\n", task->nome, task->prioridade, task->entrega.day, task->entrega.month);
+        fprintf(file, "%s\n%d\n%d/%d\n", task->nome, task->prioridade, task->entrega.day, task->entrega.month);
     }
+
+    fclose(file);
 }
 
 int main()
 {   
-    FILE *file = fopen("data.txt", "w");
-    ToDoList toDoList;
+    FILE *file = fopen("data.txt", "rt+");
 
+    ToDoList toDoList;
+    Task *task;
+
+    initToDoList(&toDoList);
+    readFile(file, &toDoList);
+    
     int op = 0;
     char name[50];
 
@@ -230,8 +251,11 @@ int main()
 
         switch(op)
         {
-            case 1 : 
-                insTask(&toDoList);
+            case 1 :
+                task = createTask();
+                insTask(&toDoList, task);
+                printf("\nTarefa adicionada com sucesso!\n");
+
                 break;
 
             case 2 :
@@ -260,8 +284,7 @@ int main()
                 break;
 
             case 10 :
-                writeFile(file, toDoList);
-                fclose(file);
+                writeFile(toDoList);
                 break;
 
             default :
