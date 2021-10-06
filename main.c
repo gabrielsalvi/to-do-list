@@ -208,10 +208,18 @@ void upTask(ToDoList *toDoList, char *name)
     }
 }
 
-int main()
+void writeFile(FILE *file, ToDoList toDoList)
 {
+    for (Task *task = toDoList.head; task != NULL; task = task->next) 
+    {
+        fprintf(file, "%s;%d;%d/%d\n", task->nome, task->prioridade, task->entrega.day, task->entrega.month);
+    }
+}
+
+int main()
+{   
+    FILE *file = fopen("data.txt", "w");
     ToDoList toDoList;
-    initToDoList(&toDoList);
 
     int op = 0;
     char name[50];
@@ -252,6 +260,8 @@ int main()
                 break;
 
             case 10 :
+                writeFile(file, toDoList);
+                fclose(file);
                 break;
 
             default :
