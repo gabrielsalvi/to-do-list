@@ -9,15 +9,20 @@ typedef struct {
 	int month;
 } Date;
 
-struct REC {
+typedef struct {
     char nome[50];
     int prioridade;
-    Date entrega; 
-    struct REC *next;
-    struct REC *prev;
+    Date entrega;
+} Info;
+
+struct TSK
+{
+    Info *info;
+    struct TSK *next;
+    struct TSK *prev;
 };
 
-typedef struct REC Task;
+typedef struct TSK Task;
 
 typedef struct
 {
@@ -44,28 +49,30 @@ void initToDoList(ToDoList *toDoList)
 
 Task *createTask() 
 {
+    Info *info = (Info *)malloc(sizeof(Info));
     Task *task = (Task *)malloc(sizeof(Task));
 
     printf("\nDigite os dados da nova tarefa:\n");
 
     printf("\nNome: ");
     scanf("\n");
-    fgets(task->nome, 50, stdin);
-    task->nome[strcspn(task->nome, "\n")] = 0;
+    fgets(info->nome, 50, stdin);
+    info->nome[strcspn(info->nome, "\n")] = 0;
 
     printf("Prioridade (1- baixa; 2- média; 3- alta): ");
-    scanf("%d", &task->prioridade);
+    scanf("%d", &info->prioridade);
 
-    while (task->prioridade < 1 || task->prioridade > 3) {
+    while (info->prioridade < 1 || info->prioridade > 3) {
         printf("\nDigite um valor válido para a prioridade: 1 (baixa), 2 (média) ou 3 (alta)\n");
 
         printf("\nPrioridade (1- baixa; 2- média; 3- alta): ");
-        scanf("%d", &task->prioridade);
+        scanf("%d", &info->prioridade);
     }
 
     printf("Entrega (dd/mm): ");
-    scanf("%d/%d", &task->entrega.day, &task->entrega.month);
+    scanf("%d/%d", &info->entrega.day, &info->entrega.month);
 
+    task->info = info;
     task->prev = NULL;
     task->next = NULL;
 
@@ -76,7 +83,7 @@ Task *getTaskByName(ToDoList *toDoList, char *name)
 {
     for (Task *task = toDoList->head; task != NULL; task = task->next) 
     {
-        if (strcmp(task->nome, name) == 0) {
+        if (strcmp(task->info->nome, name) == 0) {
             return task;
         }
     }
@@ -86,7 +93,7 @@ Task *getTaskByName(ToDoList *toDoList, char *name)
 
 void insTask(ToDoList *toDoList, Task *task)
 {
-    if (task == NULL) {
+    if (!task) {
         return;
     }
 
@@ -141,12 +148,36 @@ void delTask(ToDoList *toDoList, char *name)
 void printTask(Task *task) 
 {
     printf("\n-> Nome: %s\n   Prioridade: %d\n   Entrega: %d/%d\n", 
-            task->nome, task->prioridade, task->entrega.day, task->entrega.month);
+            task->info->nome, task->info->prioridade, task->info->entrega.day, task->info->entrega.month);
+}
+
+void swap(Task *a, Task *b) 
+{
+    Info *aux = a->info;
+
+    a->info = b->info;
+    b->info = aux;
+}
+
+void bubbleSort(Task *head, Task *tail)
+{
+    for (Task *task = tail; task != NULL; task = task->prev) 
+    {
+        for (Task *next = task->next; next != NULL; next = next->next) 
+        {
+            if (strcmp(task->info->nome, next->info->nome) > 0) 
+            {
+                swap(task, next);
+            }
+        }
+    }
 }
 
 void listTasks(ToDoList toDoList)
 {
     printf("\nLista de Tarefas\n----------------\n");
+
+    bubbleSort(toDoList.head, toDoList.tail);
 
     for (Task *task = toDoList.head; task != NULL; task = task->next)
     {
@@ -175,17 +206,17 @@ void upTask(ToDoList *toDoList, char *name)
         printTask(task);
 
         printf("\nPrioridade (1- baixa; 2- média; 3- alta): ");
-        scanf("%d", &task->prioridade);
+        scanf("%d", &task->info->prioridade);
 
-        while (task->prioridade < 1 || task->prioridade > 3) {
+        while (task->info->prioridade < 1 || task->info->prioridade > 3) {
             printf("\nDigite um valor válido para a prioridade: 1 (baixa), 2 (média) ou 3 (alta)\n");
 
             printf("\nPrioridade (1- baixa; 2- média; 3- alta): ");
-            scanf("%d", &task->prioridade);
+            scanf("%d", &task->info->prioridade);
         }
 
         printf("Entrega (dd/mm): ");
-        scanf("%d/%d", &task->entrega.day, &task->entrega.month);
+        scanf("%d/%d", &task->info->entrega.day, &task->info->entrega.month);
 
         printf("\nA tarefa '%s' doi atualizada com sucesso!\n", name);
     } 
@@ -197,17 +228,24 @@ void upTask(ToDoList *toDoList, char *name)
 
 void readFile(FILE *file, ToDoList *toDoList) 
 {   
+    Info *info;
     Task *task;
 
     while (!feof(file)) 
     {
+        info = (Info *)malloc(sizeof(Info));
+
+        fgets(info->nome, 50, file);
+        info->nome[strcspn(info->nome, "\n")] = 0;
+
+        fscanf(file, "%d\n", &info->prioridade);
+        fscanf(file, "%d/%d\n", &info->entrega.day, &info->entrega.month);
+
         task = (Task *)malloc(sizeof(Task));
 
-        fgets(task->nome, 50, file);
-        task->nome[strcspn(task->nome, "\n")] = 0;
-
-        fscanf(file, "%d\n", &task->prioridade);
-        fscanf(file, "%d/%d\n", &task->entrega.day, &task->entrega.month);
+        task->info = info;
+        task->prev = NULL;
+        task->next = NULL;
 
         insTask(toDoList, task);
     }
@@ -219,12 +257,26 @@ void writeFile(ToDoList toDoList)
 
     for (Task *task = toDoList.head; task != NULL; task = task->next) 
     {
-        fprintf(file, "%s\n%d\n%d/%d\n", task->nome, task->prioridade, task->entrega.day, task->entrega.month);
+        fprintf(file, "%s\n%d\n%d/%d\n", task->info->nome, task->info->prioridade, task->info->entrega.day, task->info->entrega.month);
     }
 
     fclose(file);
 }
 
+void clear(Task *head) 
+{
+    if (head->next == NULL)
+    {   
+        free(head->info);
+        free(head);
+        return;
+    }
+
+    clear(head->next);
+
+    free(head->info);
+    free(head);
+}
 int main()
 {
     ToDoList toDoList;
@@ -259,6 +311,7 @@ int main()
                 name[strcspn(name, "\n")] = 0;
 
                 delTask(&toDoList, name);
+                printf("\nTarefa deletada com sucesso!\n");
                 break;
 
             case 3 :
@@ -287,6 +340,9 @@ int main()
 
             case 10 :
                 writeFile(toDoList);
+
+                clear(toDoList.head);
+                initToDoList(&toDoList);
                 break;
 
             default :
