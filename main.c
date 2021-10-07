@@ -1,14 +1,3 @@
-/*
- Este é um esqueleto que deve ser utilzado como base para implementação da Lista de tarefas;
-	- As funções não têm os parâmetros definidos; se necessário, estes devem ser incluídos;
- 	- Devem ser respeitados os nomes atribuidos aos métodos e estruturas, porém, novas estruturas e funções podem ser criadas, caso julgue necessário;
-	- Faça os includes necessários;
-	- A organização das funções fica a critério do programador;
-	- Códigos não indentados sofrerão duras penalidades;
-	- Não serão toleradas variaveis globais;
-	- Caso seja detectado plágio, os grupos envolvidos receberão nota 0.
-*/
-
 #include <stdio.h> 
 #include <stdlib.h>
 #include <string.h>
@@ -60,7 +49,9 @@ Task *createTask()
     printf("\nDigite os dados da nova tarefa:\n");
 
     printf("\nNome: ");
-    scanf("%s", task->nome);
+    scanf("\n");
+    fgets(task->nome, 50, stdin);
+    task->nome[strcspn(task->nome, "\n")] = 0;
 
     printf("Prioridade (1- baixa; 2- média; 3- alta): ");
     scanf("%d", &task->prioridade);
@@ -212,7 +203,9 @@ void readFile(FILE *file, ToDoList *toDoList)
     {
         task = (Task *)malloc(sizeof(Task));
 
-        fscanf(file, "%s\n", task->nome);
+        fgets(task->nome, 50, file);
+        task->nome[strcspn(task->nome, "\n")] = 0;
+
         fscanf(file, "%d\n", &task->prioridade);
         fscanf(file, "%d/%d\n", &task->entrega.day, &task->entrega.month);
 
@@ -233,14 +226,15 @@ void writeFile(ToDoList toDoList)
 }
 
 int main()
-{   
+{
+    ToDoList toDoList;
+    initToDoList(&toDoList);
+
     FILE *file = fopen("data.txt", "rt+");
 
-    ToDoList toDoList;
-    Task *task;
-
-    initToDoList(&toDoList);
-    readFile(file, &toDoList);
+    if (file) {
+        readFile(file, &toDoList);
+    }
     
     int op = 0;
     char name[50];
@@ -252,29 +246,37 @@ int main()
         switch(op)
         {
             case 1 :
-                task = createTask();
-                insTask(&toDoList, task);
+                insTask(&toDoList, createTask());
                 printf("\nTarefa adicionada com sucesso!\n");
 
                 break;
 
             case 2 :
                 printf("\nNome da tarefa à ser deletada: ");
-                scanf("%s", name);
+
+                scanf("\n");
+                fgets(name, 50, stdin);
+                name[strcspn(name, "\n")] = 0;
 
                 delTask(&toDoList, name);
                 break;
 
             case 3 :
                 printf("\nNome da tarefa à ser editada: ");
-                scanf("%s", name);
+
+                scanf("\n");
+                fgets(name, 50, stdin);
+                name[strcspn(name, "\n")] = 0;
 
                 upTask(&toDoList, name);
                 break;
             
             case 4 :
                 printf("\nNome da Tarefa: ");
-                scanf("%s", name);
+
+                scanf("\n");
+                fgets(name, 50, stdin);
+                name[strcspn(name, "\n")] = 0;
 
                 queryTask(&toDoList, name);
                 break;
